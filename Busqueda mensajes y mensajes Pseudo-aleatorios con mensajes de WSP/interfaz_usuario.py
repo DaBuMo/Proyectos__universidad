@@ -13,7 +13,6 @@ def verificacion_comando_valido(comando_usuario:str) -> bool:
     Dado un input por el usuario, la funcion verifica si se encuentra dentro del rango de comandos validos.
 
     PRECONDICIONES: 
-
     POSTCONDICION:
         - Retona un booleano segun cumple o incumple la condicion
     """
@@ -30,23 +29,29 @@ def verificar_existencia_archivo(archivo:str,tipo:str) -> bool:
     Dada la direccion de un archivo y el tipo de archivo que es, verifica que este archivo exista y sea del tipo indicado
 
     PRECONDICIONES: 
-
     POSTCONDICION:
         - Si el archivo existe y es del tipo indicado nos devolvera True
     """
 
     try:
-        
-        if len(archivo.split('.')) == 2 and tipo != archivo.split('.')[1]:
+        if len(archivo.split('.')) == 2 and tipo != archivo.split('.')[1] or len(archivo.split('.')) == 1:
             raise FileExistsError
-    
-        with open(archivo,'r') as archivo:
-            if tipo == FORMATO_CHAT:
-                print(' Abriendo archivo '.center(CENTRADO_MENSAJE,'-'))
-            return True
         
+        if tipo == FORMATO_GUARDADO:
+            with open(archivo,'w') as archivo:
+                if tipo == FORMATO_CHAT:
+                    print(' Abriendo archivo '.center(CENTRADO_MENSAJE,'-'))
+                return True
+            
+        else: 
+            with open(archivo,'r') as archivo:
+                if tipo == FORMATO_CHAT:
+                    print(' Abriendo archivo '.center(CENTRADO_MENSAJE,'-'))
+                return True  
+             
     except FileNotFoundError:
         print('Lo siento, Archivo no encontrado, intenta nuevamente')
+
     except FileExistsError:
         print('El formato de archivo no es el correcto, intenta nuevamente')
 
@@ -119,7 +124,7 @@ def contar_palabras(direccion_chat:str) -> None:
 
     while True:
     
-        direccion_guardado = input('Porfavor ingrese la direccion del archivo de guardado (Recuerda que el formato del archivo debera ser .csv): ')
+        direccion_guardado = input('Porfavor ingrese la direccion del archivo de guardado, si el nombre del archivo no es encontrado se creara uno con el nombre indicado en la direccion ingresada (Recuerda que el formato del archivo debera ser .csv): ')
 
         if verificar_existencia_archivo(direccion_guardado,FORMATO_GUARDADO):
             break
@@ -134,38 +139,34 @@ def contar_palabras(direccion_chat:str) -> None:
 
 def main():
 
-    try:
-        while True:
-            direccion_chat = input('Porfavor ingrese la direccion del archivo que desea abrir (Recuerda que el formato del archivo debera ser .txt): ')
+    while True:
+        direccion_chat = input('Porfavor ingrese la direccion del archivo que desea abrir (Recuerda que el formato del archivo debera ser .txt): ')
+        
+        if verificar_existencia_archivo(direccion_chat,FORMATO_CHAT):
+            break
+
+    while True:
+        
+        comando_usuario = input(f'Que desea hacer con el chat.\n\n1.Contar cuantas veces aparece una palabra o un conjunto de palabras.\n\n2.Generar un mensaje pseudo-aleatorio apartir de un contacto.\n\n3.Salir.\n\n')
+        
+        if not verificacion_comando_valido(comando_usuario):
+            continue 
+
+        if int(comando_usuario) == CONTAR_PALABRAS:
             
-            if verificar_existencia_archivo(direccion_chat,FORMATO_CHAT):
-                break
-    
-        while True:
+            contar_palabras(direccion_chat)
+
+        elif int(comando_usuario) == GENERAR_MENSAJES:
+
+            usuarios = {}
+
+            if not usuarios:
+                usuarios = generador_palabras_personajes(direccion_chat)
             
-            comando_usuario = input(f'Que desea hacer con el chat.\n\n1.Contar cuantas veces aparece una palabra o un conjunto de palabras.\n\n2.Generar un mensaje pseudo-aleatorio apartir de un contacto.\n\n3.Salir.\n\n')
+            generar_mensaje(usuarios)
             
-            if not verificacion_comando_valido(comando_usuario):
-                continue 
-
-            if int(comando_usuario) == CONTAR_PALABRAS:
-                
-                contar_palabras(direccion_chat)
-
-            elif int(comando_usuario) == GENERAR_MENSAJES:
-
-                usuarios = {}
-
-                if not usuarios:
-                    usuarios = generador_palabras_personajes(direccion_chat)
-                
-                generar_mensaje(usuarios)
-                
-            elif int(comando_usuario) == SALIR:
-                print(' Cerrando archivo '.center(CENTRADO_MENSAJE,'-'))
-                break
-    
-    except Exception as e:
-        print(f'Error: {e}')
+        elif int(comando_usuario) == SALIR:
+            print(' Cerrando archivo '.center(CENTRADO_MENSAJE,'-'))
+            break
 
 main()
